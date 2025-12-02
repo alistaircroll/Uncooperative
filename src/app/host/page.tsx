@@ -147,7 +147,7 @@ function HostContent() {
         const newTreasury = state.treasury - totalExtraction;
 
         // Update player wealth
-        const updatedPlayers = {};
+        const updatedPlayers: Record<string, any> = {};
         Object.keys(players).forEach(pid => {
             updatedPlayers[`players/${pid}/wealth`] = players[pid].wealth + players[pid].currentTurnExtraction;
             updatedPlayers[`players/${pid}/currentTurnExtraction`] = null;
@@ -190,7 +190,7 @@ function HostContent() {
 
     const startGame = async () => {
         // Remove unnamed players before starting
-        const updates = {};
+        const updates: Record<string, any> = {};
         playerList.forEach(p => {
             if (!p.name) {
                 updates[`players/${p.id}`] = null;
