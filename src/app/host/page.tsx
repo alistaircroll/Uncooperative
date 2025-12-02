@@ -7,11 +7,27 @@ import { database } from '@/lib/firebase';
 import QRCode from 'react-qr-code';
 import styles from './host.module.css';
 
+interface GameState {
+    status: string;
+    players: Record<string, any>;
+    treasury: number;
+    maxExtraction: number;
+    interestRate: number;
+    maxTurns: number;
+    turn: number;
+    turnPhase?: string;
+    lastTurnExtraction?: number;
+    lastTurnInterest?: number;
+    projectedTreasury?: number;
+    showWealth?: boolean;
+    [key: string]: any;
+}
+
 function HostContent() {
     const searchParams = useSearchParams();
     const gameId = searchParams.get('id');
 
-    const [gameState, setGameState] = useState(null);
+    const [gameState, setGameState] = useState<GameState | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -39,7 +55,7 @@ function HostContent() {
         const namedPlayers = Object.values(gameState.players || {}).filter((p: any) => p.name).length;
 
         // Simulation Defaults
-        const defaults = {
+        const defaults: Record<number, Partial<GameState>> = {
             3: { treasury: 70000000, maxExtraction: 5000000, interestRate: 0.15, maxTurns: 12 },
             4: { treasury: 60000000, maxExtraction: 3000000, interestRate: 0.15, maxTurns: 15 },
             5: { treasury: 100000000, maxExtraction: 5000000, interestRate: 0.15, maxTurns: 12 }
@@ -106,10 +122,11 @@ function HostContent() {
         }
     };
 
-    const showTurnSummary = async (state) => {
+    const showTurnSummary = async (state: GameState) => {
         const players = state.players || {};
         const playerList = Object.values(players);
-        const totalExtraction = playerList.reduce((sum, p) => sum + (p.currentTurnExtraction || 0), 0);
+        const activePlayers = playerList.filter((p: any) => p.name);
+        const totalExtraction = activePlayers.reduce((sum: number, p: any) => sum + (parseInt(p.currentTurnExtraction) || 0), 0);
         const newTreasury = state.treasury - totalExtraction;
         const interest = newTreasury * state.interestRate;
 
@@ -121,12 +138,12 @@ function HostContent() {
         });
     };
 
-    const processTurn = async (state) => {
+    const processTurn = async (state: GameState) => {
         const players = state.players || {};
         const playerList = Object.values(players);
 
         // Calculate total extraction
-        const totalExtraction = playerList.reduce((sum, p) => sum + (p.currentTurnExtraction || 0), 0);
+        const totalExtraction = playerList.reduce((sum: number, p: any) => sum + (p.currentTurnExtraction || 0), 0);
         const newTreasury = state.treasury - totalExtraction;
 
         // Update player wealth

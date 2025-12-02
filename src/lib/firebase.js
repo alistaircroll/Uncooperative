@@ -1,17 +1,22 @@
 import { initializeApp } from 'firebase/app';
 import { getDatabase } from 'firebase/database';
 
-// Firebase configuration
+// Firebase configuration - loaded from environment variables
 const firebaseConfig = {
-    apiKey: "AIzaSyAUIcXSmo0kJtIS7n15j50mQzU12sMrbDE",
-    authDomain: "uncooperative-v1.firebaseapp.com",
-    databaseURL: "https://uncooperative-v1-default-rtdb.firebaseio.com",
-    projectId: "uncooperative-v1",
-    storageBucket: "uncooperative-v1.firebasestorage.app",
-    messagingSenderId: "440987989948",
-    appId: "1:440987989948:web:9e27a8d3489b985ebc5db9",
-    measurementId: "G-WD2S4BVHFD"
+    apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+    authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+    databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
+    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+    appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+    measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
 };
+
+// Validate that required env vars are present
+if (!firebaseConfig.apiKey) {
+    throw new Error('Missing NEXT_PUBLIC_FIREBASE_API_KEY environment variable. Check your .env.local file.');
+}
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
