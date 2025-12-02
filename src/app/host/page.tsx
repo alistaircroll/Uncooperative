@@ -95,7 +95,7 @@ function HostContent() {
 
     }, [gameState?.players, gameState?.status, gameState?.treasury, gameState?.maxExtraction, gameState?.interestRate, gameState?.maxTurns]); // Run when relevant state changes
 
-    const checkTurnProgress = async (state) => {
+    const checkTurnProgress = async (state: GameState) => {
         const players = state.players || {};
         const playerList = Object.values(players);
 
