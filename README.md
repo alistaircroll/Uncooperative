@@ -1,36 +1,108 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Uncooperative - Multiplayer Game
 
-## Getting Started
+A real-time multiplayer game built with Next.js and Firebase, exploring the tragedy of the commons.
 
-First, run the development server:
+## Setup Instructions
+
+### 1. Firebase Configuration
+
+1. Go to [Firebase Console](https://console.firebase.google.com/)
+2. Create a new project (or use an existing one)
+3. Enable **Realtime Database**:
+   - In the Firebase console, go to "Build" → "Realtime Database"
+   - Click "Create Database"
+   - Choose a location
+   - Start in **test mode** (for development)
+4. Get your Firebase config:
+   - Go to Project Settings (gear icon)
+   - Scroll down to "Your apps"
+   - Click the web icon (`</>`) to add a web app
+   - Copy the `firebaseConfig` object
+5. Update `src/lib/firebase.js` with your config values
+
+### 2. Install Dependencies
+
+```bash
+npm install
+```
+
+### 3. Run Development Server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 4. Deploy to Vercel
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Push your code to GitHub
+2. Go to [Vercel](https://vercel.com)
+3. Import your repository
+4. Deploy!
 
-## Learn More
+Alternatively, use the Vercel CLI:
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm install -g vercel
+vercel
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## How to Play
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. **Host**: Click "Create New Game" to start a new game session
+2. **Players**: Scan the QR code or visit the join URL on mobile devices
+3. **Gameplay**: 
+   - Each turn, players extract money from the treasury
+   - The treasury earns interest after each turn
+   - Win by having the most money at the end
+   - But if the treasury runs out, everyone loses!
 
-## Deploy on Vercel
+## Project Structure
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```
+src/
+├── app/
+│   ├── host/          # Main display (game host view)
+│   ├── play/          # Mobile display (player view)
+│   ├── globals.css    # Design system & styles
+│   └── page.tsx       # Landing page
+└── lib/
+    └── firebase.js    # Firebase configuration
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Tech Stack
+
+- **Next.js 15** - React framework
+- **Firebase Realtime Database** - Real-time state synchronization
+- **Vercel** - Deployment platform
+- **CSS Modules** - Styling
+
+## Firebase Database Structure
+
+```json
+{
+  "games": {
+    "gameId": {
+      "treasury": 100000000,
+      "turn": 1,
+      "maxTurns": 10,
+      "maxExtraction": 5000000,
+      "interestRate": 0.10,
+      "status": "playing",
+      "turnPhase": "extracting",
+      "players": {
+        "playerId": {
+          "name": "Player Name",
+          "wealth": 5000000,
+          "currentTurnExtraction": 2000000
+        }
+      }
+    }
+  }
+}
+```
+
+## License
+
+MIT

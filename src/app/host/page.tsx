@@ -1,0 +1,536 @@
+'use client';
+
+import { useEffect, useState, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { ref, onValue, update, get } from 'firebase/database';
+import { database } from '@/lib/firebase';
+import QRCode from 'react-qr-code';
+import styles from './host.module.css';
+
+function HostContent() {
+    const searchParams = useSearchParams();
+    const gameId = searchParams.get('id');
+
+    const [gameState, setGameState] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        if (!gameId) return;
+
+        const gameRef = ref(database, `games/${gameId}`);
+        const unsubscribe = onValue(gameRef, (snapshot) => {
+            const data = snapshot.val();
+            setGameState(data);
+            setLoading(false);
+
+            // Auto-progress game logic
+            if (data && data.status === 'playing') {
+                checkTurnProgress(data);
+            }
+        });
+
+        return () => unsubscribe();
+    }, [gameId]);
+
+    // Dynamic Parameter Updates based on Player Count
+    useEffect(() => {
+        if (!gameState || gameState.status !== 'waiting') return;
+
+        const namedPlayers = Object.values(gameState.players || {}).filter((p: any) => p.name).length;
+
+        // Simulation Defaults
+        const defaults = {
+            3: { treasury: 70000000, maxExtraction: 5000000, interestRate: 0.15, maxTurns: 12 },
+            4: { treasury: 60000000, maxExtraction: 3000000, interestRate: 0.15, maxTurns: 15 },
+            5: { treasury: 100000000, maxExtraction: 5000000, interestRate: 0.15, maxTurns: 12 }
+        };
+
+        // Apply defaults if player count matches and we haven't started yet
+        if (defaults[namedPlayers]) {
+            const settings = defaults[namedPlayers];
+            // Only update if values are different to avoid infinite loops
+            if (gameState.treasury !== settings.treasury ||
+                gameState.maxExtraction !== settings.maxExtraction ||
+                gameState.interestRate !== settings.interestRate ||
+                gameState.maxTurns !== settings.maxTurns) {
+
+                update(ref(database, `games/${gameId}`), {
+                    treasury: settings.treasury,
+                    maxExtraction: settings.maxExtraction,
+                    interestRate: settings.interestRate,
+                    maxTurns: settings.maxTurns
+                });
+            }
+        } else if (namedPlayers > 5) {
+            const settings = defaults[5];
+            if (gameState.treasury !== settings.treasury ||
+                gameState.maxExtraction !== settings.maxExtraction ||
+                gameState.interestRate !== settings.interestRate ||
+                gameState.maxTurns !== settings.maxTurns) {
+
+                update(ref(database, `games/${gameId}`), {
+                    treasury: settings.treasury,
+                    maxExtraction: settings.maxExtraction,
+                    interestRate: settings.interestRate,
+                    maxTurns: settings.maxTurns
+                });
+            }
+        }
+
+    }, [gameState?.players, gameState?.status, gameState?.treasury, gameState?.maxExtraction, gameState?.interestRate, gameState?.maxTurns]); // Run when relevant state changes
+
+    const checkTurnProgress = async (state) => {
+        const players = state.players || {};
+        const playerList = Object.values(players);
+
+        // Check if all players have submitted
+        const allSubmitted = playerList.every(p => p.currentTurnExtraction !== undefined && p.currentTurnExtraction !== null);
+
+        if (allSubmitted && state.turnPhase === 'extracting') {
+            // Calculate total extraction to check for bankruptcy
+            const totalExtraction = playerList.reduce((sum, p) => sum + (p.currentTurnExtraction || 0), 0);
+            const newTreasury = state.treasury - totalExtraction;
+
+            if (newTreasury <= 0) {
+                // Bankrupt! Skip summary and end game immediately
+                processTurn(state);
+            } else {
+                // Show summary screen
+                setTimeout(() => showTurnSummary(state), 500);
+            }
+        }
+
+        // Auto-advance from summary after 5 seconds
+        if (state.turnPhase === 'summary') {
+            setTimeout(() => processTurn(state), 5000);
+        }
+    };
+
+    const showTurnSummary = async (state) => {
+        const players = state.players || {};
+        const playerList = Object.values(players);
+        const totalExtraction = playerList.reduce((sum, p) => sum + (p.currentTurnExtraction || 0), 0);
+        const newTreasury = state.treasury - totalExtraction;
+        const interest = newTreasury * state.interestRate;
+
+        await update(ref(database, `games/${gameId}`), {
+            turnPhase: 'summary',
+            lastTurnExtraction: totalExtraction,
+            lastTurnInterest: interest,
+            projectedTreasury: newTreasury + interest // Save projected treasury including interest
+        });
+    };
+
+    const processTurn = async (state) => {
+        const players = state.players || {};
+        const playerList = Object.values(players);
+
+        // Calculate total extraction
+        const totalExtraction = playerList.reduce((sum, p) => sum + (p.currentTurnExtraction || 0), 0);
+        const newTreasury = state.treasury - totalExtraction;
+
+        // Update player wealth
+        const updatedPlayers = {};
+        Object.keys(players).forEach(pid => {
+            updatedPlayers[`players/${pid}/wealth`] = players[pid].wealth + players[pid].currentTurnExtraction;
+            updatedPlayers[`players/${pid}/currentTurnExtraction`] = null;
+        });
+
+        // Check for bankruptcy
+        if (newTreasury <= 0) {
+            await update(ref(database, `games/${gameId}`), {
+                ...updatedPlayers,
+                treasury: Math.max(0, newTreasury),
+                status: 'lost',
+                turnPhase: 'ended'
+            });
+            return;
+        }
+
+        // Apply interest
+        const interest = newTreasury * state.interestRate;
+        const finalTreasury = newTreasury + interest;
+        const nextTurn = state.turn + 1;
+
+        // Check if game is over
+        if (nextTurn >= state.maxTurns) {
+            await update(ref(database, `games/${gameId}`), {
+                ...updatedPlayers,
+                treasury: finalTreasury,
+                turn: nextTurn,
+                status: 'won',
+                turnPhase: 'ended'
+            });
+        } else {
+            await update(ref(database, `games/${gameId}`), {
+                ...updatedPlayers,
+                treasury: finalTreasury,
+                turn: nextTurn,
+                turnPhase: 'extracting'
+            });
+        }
+    };
+
+    const startGame = async () => {
+        // Remove unnamed players before starting
+        const updates = {};
+        playerList.forEach(p => {
+            if (!p.name) {
+                updates[`players/${p.id}`] = null;
+            }
+        });
+
+        // Calculate dynamic max turns: 5 + number of named players
+        const namedPlayers = playerList.filter(p => p.name).length;
+        const dynamicMaxTurns = 5 + namedPlayers;
+
+        // Set game status to playing
+        updates['status'] = 'playing';
+        updates['turn'] = 1;
+        updates['turnPhase'] = 'extracting';
+        updates['maxTurns'] = dynamicMaxTurns;
+
+        await update(ref(database, `games/${gameId}`), updates);
+    };
+
+    const endGame = async () => {
+        await update(ref(database, `games/${gameId}`), {
+            status: 'waiting',
+            turn: 0,
+            treasury: 100000000,
+            turnPhase: null
+        });
+    };
+
+    const clearPlayers = async () => {
+        await update(ref(database, `games/${gameId}`), {
+            players: {}
+        });
+    };
+
+    if (loading) {
+        return <div className="container flex-center" style={{ minHeight: '100vh' }}>
+            <div className="pulse">Loading game...</div>
+        </div>;
+    }
+
+    if (!gameState) {
+        return <div className="container flex-center" style={{ minHeight: '100vh' }}>
+            <div className="glass-card text-center">
+                <h2>Game not found</h2>
+                <p className="mt-sm">Please check the game ID</p>
+            </div>
+        </div>;
+    }
+
+    const players = gameState.players || {};
+    const playerList = Object.entries(players).map(([id, data]) => ({ id, ...data }));
+    const playerCount = playerList.length;
+    const namedPlayerCount = playerList.filter(p => p.name).length;
+    const canStart = namedPlayerCount >= 3;
+
+    const joinUrl = typeof window !== 'undefined'
+        ? `${window.location.origin}/play?id=${gameId}`
+        : '';
+
+    // Waiting Screen
+    if (gameState.status === 'waiting') {
+        return (
+            <div className={styles.host}>
+                <div className="container">
+                    <h1 className="text-center fade-in">UNCOOPERATIVE</h1>
+
+                    <div className={`${styles.hostLayout} mt-lg`}>
+                        {/* Left Column: Join & Players */}
+                        <div className={`${styles.hostColumnLeft} fade-in`}>
+                            <div className="glass-card">
+                                <h3 className="mb-sm text-center">Scan to Join</h3>
+                                <div className={styles.qrContainer}>
+                                    {playerCount >= 5 ? (
+                                        <div className={styles.qrDisabled}>Maximum players joined</div>
+                                    ) : (
+                                        <QRCode value={joinUrl} size={200} />
+                                    )}
+                                </div>
+                                <p className="text-center mt-sm" style={{ fontSize: '0.9rem' }}>{joinUrl}</p>
+                            </div>
+
+                            <div className="glass-card">
+                                <h3 className="mb-sm">Players ({playerCount})</h3>
+                                {playerCount === 0 ? (
+                                    <p className="text-center" style={{ color: 'var(--text-muted)' }}>Waiting for players to join...</p>
+                                ) : (
+                                    <div className={styles.playerList}>
+                                        {playerList.map(player => (
+                                            <div key={player.id} className={styles.playerCard}>
+                                                <div className={styles.playerName}>
+                                                    {player.name || <span className="pulse">signing in...</span>}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+
+                            <button
+                                onClick={clearPlayers}
+                                className="btn btn-secondary"
+                                style={{ width: '100%' }}
+                            >
+                                Clear Players
+                            </button>
+                        </div>
+
+                        {/* Right Column: Settings & Start */}
+                        <div className={`${styles.hostColumnRight} fade-in`}>
+                            <div className="glass-card">
+                                <h3 className="mb-sm">Game Settings</h3>
+                                <div className={styles.settings}>
+                                    <div>
+                                        <label>Number of Turns</label>
+                                        <input
+                                            type="number"
+                                            value={gameState.maxTurns || 10}
+                                            onChange={(e) => update(ref(database, `games/${gameId}`), { maxTurns: parseInt(e.target.value) || 0 })}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label>Starting Treasury</label>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <span>$</span>
+                                            <input
+                                                type="number"
+                                                value={Math.round(gameState.treasury / 1000000)}
+                                                onChange={(e) => update(ref(database, `games/${gameId}`), { treasury: (parseFloat(e.target.value) || 0) * 1000000 })}
+                                            />
+                                            <span>M</span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label>Max Extraction</label>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <span>$</span>
+                                            <input
+                                                type="number"
+                                                value={Math.round(gameState.maxExtraction / 1000000)}
+                                                onChange={(e) => update(ref(database, `games/${gameId}`), { maxExtraction: (parseFloat(e.target.value) || 0) * 1000000 })}
+                                            />
+                                            <span>M</span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label>Interest Rate</label>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <input
+                                                type="number"
+                                                value={Math.round(gameState.interestRate * 100)}
+                                                onChange={(e) => update(ref(database, `games/${gameId}`), { interestRate: (parseFloat(e.target.value) || 0) / 100 })}
+                                            />
+                                            <span>%</span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label>Show Player Wealth</label>
+                                        <label className={styles.toggle}>
+                                            <input
+                                                type="checkbox"
+                                                checked={gameState.showWealth || false}
+                                                onChange={async (e) => {
+                                                    await update(ref(database, `games/${gameId}`), {
+                                                        showWealth: e.target.checked
+                                                    });
+                                                }}
+                                            />
+                                            <span className={styles.slider}></span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button
+                                onClick={startGame}
+                                disabled={!canStart}
+                                className="btn btn-primary"
+                                style={{ width: '100%', padding: '1.5rem', fontSize: '1.2rem' }}
+                            >
+                                Start Game
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // Turn Summary Screen
+    if (gameState.turnPhase === 'summary') {
+        return (
+            <div className={styles.host}>
+                <div className="container">
+                    <h1 className="text-center">Turn {gameState.turn} Summary</h1>
+
+                    <div className="glass-card mt-lg fade-in">
+                        <div className={styles.turnSummary}>
+                            <div className={styles.summaryItem}>
+                                <span className={styles.summaryLabel}>Total Extracted</span>
+                                <span className={styles.summaryValue} style={{ color: 'var(--danger)' }}>
+                                    -${(gameState.lastTurnExtraction / 1000000).toFixed(1)}M
+                                </span>
+                            </div>
+
+                            <div className={styles.summaryItem}>
+                                <span className={styles.summaryLabel}>Interest Earned</span>
+                                <span className={styles.summaryValue} style={{ color: 'var(--success)' }}>
+                                    +${(gameState.lastTurnInterest / 1000000).toFixed(1)}M
+                                </span>
+                            </div>
+
+                            <div className={styles.summaryItem}>
+                                <span className={styles.summaryLabel}>New Treasury Balance</span>
+                                <span className={styles.summaryValue}>
+                                    ${(gameState.projectedTreasury / 1000000).toFixed(1)}M
+                                </span>
+                            </div>
+
+                            <div className={styles.progressContainer}>
+                                <div className={styles.progressBar}></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // Playing Screen
+    if (gameState.status === 'playing') {
+        return (
+            <div className={styles.host}>
+                <div className="container">
+                    <h1 className="text-center">UNCOOPERATIVE</h1>
+
+                    <div className={styles.gameStats}>
+                        <div className="glass-card">
+                            <div className={styles.statLabel}>Treasury</div>
+                            <div className={styles.statValue}>${(gameState.treasury / 1000000).toFixed(1)}M</div>
+                        </div>
+                        <div className="glass-card">
+                            <div className={styles.statLabel}>Turn</div>
+                            <div className={styles.statValue}>{gameState.turn} / {gameState.maxTurns}</div>
+                        </div>
+                        <div className="glass-card">
+                            <div className={styles.statLabel}>Interest</div>
+                            <div className={styles.statValue}>{(gameState.interestRate * 100)}%</div>
+                        </div>
+                    </div>
+
+                    <div className="glass-card mt-lg text-center">
+                        <h3 className="pulse">Everyone select how much to extract from the treasury</h3>
+                    </div>
+
+                    <div className="glass-card mt-lg">
+                        <h3 className="mb-sm">Players</h3>
+                        <div className={styles.playerList}>
+                            {playerList.map(player => {
+                                const hasSubmitted = player.currentTurnExtraction !== undefined && player.currentTurnExtraction !== null;
+                                return (
+                                    <div key={player.id} className={styles.playerCard}>
+                                        <div className={styles.playerName}>{player.name}</div>
+                                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                                            {gameState.showWealth && (
+                                                <div className={styles.playerWealth}>
+                                                    ${(player.wealth / 1000000).toFixed(1)}M
+                                                </div>
+                                            )}
+                                            <div className={styles.statusIndicator}>
+                                                {hasSubmitted ? (
+                                                    <span className={styles.statusSubmitted}>✓</span>
+                                                ) : (
+                                                    <span className={styles.statusWaiting}>⟳</span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                    <div className={styles.actions}>
+                        <button onClick={endGame} className="btn btn-secondary">
+                            End Game
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // End Game Screens
+    const winner = playerList.reduce((max, p) => p.wealth > max.wealth ? p : max, playerList[0]);
+    const sortedPlayers = [...playerList].sort((a, b) => b.wealth - a.wealth);
+
+    if (gameState.status === 'lost') {
+        return (
+            <div className={styles.host}>
+                <div className="container text-center">
+                    <h1 style={{ color: 'var(--danger)' }}>YOU ALL LOST</h1>
+                    <p className="mt-md" style={{ fontSize: '1.5rem' }}>
+                        The treasury ran out in turn {gameState.turn}
+                    </p>
+
+                    <div className="glass-card mt-lg">
+                        <h3 className="mb-md">Final Standings</h3>
+                        {sortedPlayers.map((player, idx) => (
+                            <div key={player.id} className={styles.playerCard}>
+                                <div className={styles.playerName}>#{idx + 1} {player.name}</div>
+                                <div className={styles.playerWealth}>${(player.wealth / 1000000).toFixed(1)}M</div>
+                            </div>
+                        ))}
+                    </div>
+
+                    <button onClick={endGame} className="btn btn-primary mt-lg">
+                        Play Again
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    if (gameState.status === 'won') {
+        return (
+            <div className={styles.host}>
+                <div className="container text-center">
+                    <h1 style={{ color: 'var(--success)' }}>{winner.name} Won!</h1>
+                    <p className="mt-md" style={{ fontSize: '1.5rem' }}>
+                        With ${(winner.wealth / 1000000).toFixed(1)}M
+                    </p>
+
+                    <div className="glass-card mt-lg">
+                        <h3 className="mb-md">Final Standings</h3>
+                        {sortedPlayers.map((player, idx) => (
+                            <div key={player.id} className={styles.playerCard}>
+                                <div className={styles.playerName}>#{idx + 1} {player.name}</div>
+                                <div className={styles.playerWealth}>${(player.wealth / 1000000).toFixed(1)}M</div>
+                            </div>
+                        ))}
+                    </div>
+
+                    <button onClick={endGame} className="btn btn-primary mt-lg">
+                        Play Again
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    return null;
+}
+
+export default function HostPage() {
+    return (
+        <Suspense fallback={<div className="container flex-center" style={{ minHeight: '100vh' }}>Loading...</div>}>
+            <HostContent />
+        </Suspense>
+    );
+}
