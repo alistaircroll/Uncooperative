@@ -2,17 +2,33 @@
 
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { ref, onValue, update, push } from 'firebase/database';
+import { ref, onValue, update, push, remove } from 'firebase/database';
 import { database } from '@/lib/firebase';
 import styles from './play.module.css';
+
+interface GameState {
+    status: string;
+    players: Record<string, any>;
+    treasury: number;
+    maxExtraction: number;
+    interestRate: number;
+    maxTurns: number;
+    turn: number;
+    turnPhase?: string;
+    lastTurnExtraction?: number;
+    lastTurnInterest?: number;
+    projectedTreasury?: number;
+    showWealth?: boolean;
+    [key: string]: any;
+}
 
 function PlayContent() {
     const searchParams = useSearchParams();
     const gameId = searchParams.get('id');
     const playerIdFromUrl = searchParams.get('playerId');
 
-    const [gameState, setGameState] = useState(null);
-    const [playerId, setPlayerId] = useState(null);
+    const [gameState, setGameState] = useState<GameState | null>(null);
+    const [playerId, setPlayerId] = useState<string | null>(null);
     const [playerName, setPlayerName] = useState('');
     const [extraction, setExtraction] = useState('0');
     const [loading, setLoading] = useState(true);
@@ -66,6 +82,7 @@ function PlayContent() {
     };
 
     const submitName = async () => {
+        if (!playerId) return;
         if (!playerName.trim()) return;
 
         const playerRef = ref(database, `games/${gameId}/players/${playerId}`);
@@ -75,9 +92,11 @@ function PlayContent() {
     };
 
     const submitExtraction = async () => {
+        if (!playerId) return;
         const amount = parseFloat(extraction) * 1000000; // Convert to actual value
         if (isNaN(amount) || amount < 0) return;
 
+        if (!gameState) return;
         const maxExtraction = gameState.maxExtraction;
         const finalAmount = Math.min(amount, maxExtraction);
 
@@ -90,8 +109,9 @@ function PlayContent() {
     };
 
     const leaveGame = async () => {
+        if (!playerId) return;
         const playerRef = ref(database, `games/${gameId}/players/${playerId}`);
-        await update(playerRef, null); // Remove player
+        await remove(playerRef); // Remove player
         window.location.href = '/';
     };
 
@@ -114,7 +134,7 @@ function PlayContent() {
         </div>;
     }
 
-    const player = gameState.players?.[playerId];
+    const player = playerId ? gameState.players?.[playerId] : null;
 
     // Player removed
     if (!player) {
@@ -182,11 +202,11 @@ function PlayContent() {
         const maxExtraction = gameState.maxExtraction / 1000000; // In millions
         const currentAmount = extraction === '' ? 0 : parseFloat(extraction);
 
-        const handleSliderChange = (e) => {
+        const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
             setExtraction(e.target.value);
         };
 
-        const adjustAmount = (delta) => {
+        const adjustExtraction = (delta: number) => {
             const newAmount = Math.min(Math.max(0, currentAmount + delta), maxExtraction);
             setExtraction(newAmount.toFixed(1));
         };
@@ -217,26 +237,32 @@ function PlayContent() {
                                     ${currentAmount.toFixed(1)}M
                                 </div>
 
-                                <div className={styles.sliderContainer}>
+                                <div className={styles.sliderControl}>
                                     <button
-                                        className={styles.adjustBtn}
-                                        onClick={() => adjustAmount(-0.5)}
-                                    >−</button>
+                                        className={styles.adjustButton}
+                                        onClick={() => adjustExtraction(-0.1)}
+                                    >
+                                        -
+                                    </button>
 
-                                    <input
-                                        type="range"
-                                        min="0"
-                                        max={maxExtraction}
-                                        step="0.1"
-                                        value={currentAmount}
-                                        onChange={handleSliderChange}
-                                        className={styles.slider}
-                                    />
+                                    <div className={styles.sliderContainer}>
+                                        <input
+                                            type="range"
+                                            min="0"
+                                            max={gameState.maxExtraction / 1000000}
+                                            step="0.1"
+                                            value={extraction}
+                                            onChange={handleSliderChange}
+                                            className={styles.slider}
+                                        />
+                                    </div>
 
                                     <button
-                                        className={styles.adjustBtn}
-                                        onClick={() => adjustAmount(0.5)}
-                                    >+</button>
+                                        className={styles.adjustButton}
+                                        onClick={() => adjustExtraction(0.1)}
+                                    >
+                                        +
+                                    </button>
                                 </div>
 
                                 <div className={styles.errorMsg}>

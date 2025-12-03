@@ -391,21 +391,21 @@ function HostContent() {
                             <div className={styles.summaryItem}>
                                 <span className={styles.summaryLabel}>Total Extracted</span>
                                 <span className={styles.summaryValue} style={{ color: 'var(--danger)' }}>
-                                    -${(gameState.lastTurnExtraction / 1000000).toFixed(1)}M
+                                    -${((gameState.lastTurnExtraction || 0) / 1000000).toFixed(1)}M
                                 </span>
                             </div>
 
                             <div className={styles.summaryItem}>
                                 <span className={styles.summaryLabel}>Interest Earned</span>
                                 <span className={styles.summaryValue} style={{ color: 'var(--success)' }}>
-                                    +${(gameState.lastTurnInterest / 1000000).toFixed(1)}M
+                                    +${((gameState.lastTurnInterest || 0) / 1000000).toFixed(1)}M
                                 </span>
                             </div>
 
                             <div className={styles.summaryItem}>
                                 <span className={styles.summaryLabel}>New Treasury Balance</span>
                                 <span className={styles.summaryValue}>
-                                    ${(gameState.projectedTreasury / 1000000).toFixed(1)}M
+                                    ${((gameState.projectedTreasury || 0) / 1000000).toFixed(1)}M
                                 </span>
                             </div>
 
