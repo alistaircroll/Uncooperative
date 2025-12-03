@@ -298,8 +298,30 @@ function HostContent() {
                             </button>
                         </div>
 
-                        {/* Right Column: Settings & Start */}
+                        {/* Right Column: About & Settings & Start */}
                         <div className={`${styles.hostColumnRight} fade-in`}>
+                            {/* About Section */}
+                            <div className="glass-card" style={{ marginBottom: '1.5rem' }}>
+                                <h3 className="mb-sm">About this game</h3>
+                                <p style={{ fontSize: '0.95rem', lineHeight: '1.6', marginBottom: '1rem' }}>
+                                    Cooperating is hard. When a bunch of people share a finite resource, but act selfishly, everyone is eventually worse off. On the other hand, the cheater does better than everyone else—so everyone cheats.
+                                </p>
+                                <p style={{ fontSize: '0.95rem', lineHeight: '1.6', marginBottom: '1rem' }}>
+                                    This is known as the <a href="https://en.wikipedia.org/wiki/Tragedy_of_the_commons" target="_blank" rel="noopener noreferrer" style={{ color: '#c084fc', textDecoration: 'underline' }}>tragedy of the commons</a>, and it's a classic example of a coordination problem. Coordination problems are a big part of why wars, famines, greed, and unfairness happen.
+                                </p>
+                                <p style={{ fontSize: '0.95rem', lineHeight: '1.6', marginBottom: '1rem' }}>
+                                    Uncooperative is a multi-player tragedy of the commons simulation. To learn how to play and find out more about coordination, game theory, and optimization, click here.
+                                </p>
+                                <a
+                                    href="/about"
+                                    target="_blank"
+                                    className="btn btn-secondary"
+                                    style={{ width: '100%', textAlign: 'center', display: 'block', textDecoration: 'none' }}
+                                >
+                                    Learn More
+                                </a>
+                            </div>
+
                             <div className="glass-card">
                                 <h3 className="mb-sm">Game Settings</h3>
                                 <div className={styles.settings}>
