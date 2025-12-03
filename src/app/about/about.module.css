@@ -34,6 +34,44 @@
     margin-bottom: 2rem;
 }
 
+.card p {
+    font-size: 1.1rem;
+    color: var(--foreground);
+    line-height: 1.8;
+    margin-bottom: 1.5rem;
+}
+
+.card p:last-child {
+    margin-bottom: 0;
+}
+
+.card a {
+    color: #c084fc;
+    text-decoration: underline;
+    transition: color 0.2s ease;
+}
+
+.card a:hover {
+    color: #e879f9;
+}
+
+.largeText {
+    font-size: 1.4rem !important;
+    font-weight: 600;
+    line-height: 1.6 !important;
+    margin-bottom: 2rem !important;
+}
+
+.sectionTitle {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    background: linear-gradient(to right, #c084fc, #e879f9);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
 .placeholder {
     font-size: 1.2rem;
     color: var(--text-secondary);
