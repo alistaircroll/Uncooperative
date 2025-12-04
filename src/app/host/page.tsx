@@ -276,45 +276,58 @@ function HostContent() {
                                 <div className={styles.settings}>
                                     <div>
                                         <label>Number of Turns</label>
-                                        <input
-                                            type="number"
-                                            value={gameState.maxTurns || 10}
-                                            onChange={(e) => update(ref(database, `games/${gameId}`), { maxTurns: parseInt(e.target.value) || 0 })}
-                                        />
+                                        <div className={styles.paramControl}>
+                                            <button
+                                                className={styles.paramBtn}
+                                                onClick={() => update(ref(database, `games/${gameId}`), { maxTurns: Math.max(1, (gameState.maxTurns || 10) - 1) })}
+                                            >−</button>
+                                            <span className={styles.paramValue}>{gameState.maxTurns || 10}</span>
+                                            <button
+                                                className={styles.paramBtn}
+                                                onClick={() => update(ref(database, `games/${gameId}`), { maxTurns: (gameState.maxTurns || 10) + 1 })}
+                                            >+</button>
+                                        </div>
                                     </div>
                                     <div>
                                         <label>Starting Treasury</label>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                            <span>$</span>
-                                            <input
-                                                type="number"
-                                                value={Math.round(gameState.treasury / 1000000)}
-                                                onChange={(e) => update(ref(database, `games/${gameId}`), { treasury: (parseFloat(e.target.value) || 0) * 1000000 })}
-                                            />
-                                            <span>M</span>
+                                        <div className={styles.paramControl}>
+                                            <button
+                                                className={styles.paramBtn}
+                                                onClick={() => update(ref(database, `games/${gameId}`), { treasury: Math.max(1000000, gameState.treasury - 10000000) })}
+                                            >−</button>
+                                            <span className={styles.paramValue}>${Math.round(gameState.treasury / 1000000)}M</span>
+                                            <button
+                                                className={styles.paramBtn}
+                                                onClick={() => update(ref(database, `games/${gameId}`), { treasury: gameState.treasury + 10000000 })}
+                                            >+</button>
                                         </div>
                                     </div>
                                     <div>
                                         <label>Max Extraction</label>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                            <span>$</span>
-                                            <input
-                                                type="number"
-                                                value={Math.round(gameState.maxExtraction / 1000000)}
-                                                onChange={(e) => update(ref(database, `games/${gameId}`), { maxExtraction: (parseFloat(e.target.value) || 0) * 1000000 })}
-                                            />
-                                            <span>M</span>
+                                        <div className={styles.paramControl}>
+                                            <button
+                                                className={styles.paramBtn}
+                                                onClick={() => update(ref(database, `games/${gameId}`), { maxExtraction: Math.max(1000000, gameState.maxExtraction - 1000000) })}
+                                            >−</button>
+                                            <span className={styles.paramValue}>${Math.round(gameState.maxExtraction / 1000000)}M</span>
+                                            <button
+                                                className={styles.paramBtn}
+                                                onClick={() => update(ref(database, `games/${gameId}`), { maxExtraction: gameState.maxExtraction + 1000000 })}
+                                            >+</button>
                                         </div>
                                     </div>
                                     <div>
                                         <label>Interest Rate</label>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                            <input
-                                                type="number"
-                                                value={Math.round(gameState.interestRate * 100)}
-                                                onChange={(e) => update(ref(database, `games/${gameId}`), { interestRate: (parseFloat(e.target.value) || 0) / 100 })}
-                                            />
-                                            <span>%</span>
+                                        <div className={styles.paramControl}>
+                                            <button
+                                                className={styles.paramBtn}
+                                                onClick={() => update(ref(database, `games/${gameId}`), { interestRate: Math.max(0, gameState.interestRate - 0.01) })}
+                                            >−</button>
+                                            <span className={styles.paramValue}>{Math.round(gameState.interestRate * 100)}%</span>
+                                            <button
+                                                className={styles.paramBtn}
+                                                onClick={() => update(ref(database, `games/${gameId}`), { interestRate: Math.min(1, gameState.interestRate + 0.01) })}
+                                            >+</button>
                                         </div>
                                     </div>
                                     <div>

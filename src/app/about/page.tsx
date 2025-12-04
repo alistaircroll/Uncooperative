@@ -55,6 +55,7 @@ export default function AboutPage() {
                             width="100%"
                             height="600"
                             frameBorder="0"
+                            sandbox="allow-scripts allow-same-origin allow-forms"
                             allow="clipboard-write"
                             allowFullScreen
                         ></iframe>
@@ -99,6 +100,7 @@ export default function AboutPage() {
                             width="100%"
                             height="600"
                             frameBorder="0"
+                            sandbox="allow-scripts allow-same-origin allow-forms"
                             allow="clipboard-write"
                             allowFullScreen
                         ></iframe>

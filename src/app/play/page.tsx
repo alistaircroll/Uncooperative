@@ -112,7 +112,7 @@ function PlayContent() {
         if (!playerId) return;
         const playerRef = ref(database, `games/${gameId}/players/${playerId}`);
         await remove(playerRef); // Remove player
-        window.location.href = '/';
+        window.location.href = '/about';
     };
 
     if (loading) {
