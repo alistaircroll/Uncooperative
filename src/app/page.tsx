@@ -13,10 +13,11 @@ export default function Home() {
       // Create a new game in Firebase
       const gamesRef = ref(database, 'games');
       const newGameRef = push(gamesRef, {
-        treasury: 40000000, // $40M
+        treasury: 60000000, // $60M (4-player default)
         turn: 0,
-        maxExtraction: 5000000, // $5M
-        interestRate: 0.10, // 10%
+        maxExtraction: 3000000, // $3M (4-player default)
+        interestRate: 0.15, // 15% (4-player default)
+        maxTurns: 15, // 15 turns (4-player default)
         status: 'waiting', // waiting, playing, won, lost
         turnPhase: null, // extracting, summary, calculating
         showWealth: false, // Toggle for showing player wealth on main display

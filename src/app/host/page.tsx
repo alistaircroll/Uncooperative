@@ -48,53 +48,6 @@ function HostContent() {
         return () => unsubscribe();
     }, [gameId]);
 
-    // Dynamic Parameter Updates based on Player Count
-    useEffect(() => {
-        if (!gameState || gameState.status !== 'waiting') return;
-
-        const namedPlayers = Object.values(gameState.players || {}).filter((p: any) => p.name).length;
-
-        // Simulation Defaults
-        const defaults: Record<number, Partial<GameState>> = {
-            3: { treasury: 70000000, maxExtraction: 5000000, interestRate: 0.15, maxTurns: 12 },
-            4: { treasury: 60000000, maxExtraction: 3000000, interestRate: 0.15, maxTurns: 15 },
-            5: { treasury: 100000000, maxExtraction: 5000000, interestRate: 0.15, maxTurns: 12 }
-        };
-
-        // Apply defaults if player count matches and we haven't started yet
-        if (defaults[namedPlayers]) {
-            const settings = defaults[namedPlayers];
-            // Only update if values are different to avoid infinite loops
-            if (gameState.treasury !== settings.treasury ||
-                gameState.maxExtraction !== settings.maxExtraction ||
-                gameState.interestRate !== settings.interestRate ||
-                gameState.maxTurns !== settings.maxTurns) {
-
-                update(ref(database, `games/${gameId}`), {
-                    treasury: settings.treasury,
-                    maxExtraction: settings.maxExtraction,
-                    interestRate: settings.interestRate,
-                    maxTurns: settings.maxTurns
-                });
-            }
-        } else if (namedPlayers > 5) {
-            const settings = defaults[5];
-            if (gameState.treasury !== settings.treasury ||
-                gameState.maxExtraction !== settings.maxExtraction ||
-                gameState.interestRate !== settings.interestRate ||
-                gameState.maxTurns !== settings.maxTurns) {
-
-                update(ref(database, `games/${gameId}`), {
-                    treasury: settings.treasury,
-                    maxExtraction: settings.maxExtraction,
-                    interestRate: settings.interestRate,
-                    maxTurns: settings.maxTurns
-                });
-            }
-        }
-
-    }, [gameState?.players, gameState?.status, gameState?.treasury, gameState?.maxExtraction, gameState?.interestRate, gameState?.maxTurns]); // Run when relevant state changes
-
     const checkTurnProgress = async (state: GameState) => {
         const players = state.players || {};
         const playerList = Object.values(players);
@@ -197,15 +150,11 @@ function HostContent() {
             }
         });
 
-        // Calculate dynamic max turns: 5 + number of named players
-        const namedPlayers = playerList.filter(p => p.name).length;
-        const dynamicMaxTurns = 5 + namedPlayers;
-
         // Set game status to playing
         updates['status'] = 'playing';
         updates['turn'] = 1;
         updates['turnPhase'] = 'extracting';
-        updates['maxTurns'] = dynamicMaxTurns;
+        // Note: maxTurns is NOT set here - we preserve the user's setting from gameState
 
         await update(ref(database, `games/${gameId}`), updates);
     };
