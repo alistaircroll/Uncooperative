@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useState, useRef, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { ref, onValue, update, push, remove } from 'firebase/database';
 import { database } from '@/lib/firebase';
@@ -32,6 +32,7 @@ function PlayContent() {
     const [playerName, setPlayerName] = useState('');
     const [extraction, setExtraction] = useState('0');
     const [loading, setLoading] = useState(true);
+    const lastTurnRef = useRef(0);
 
     // Get or create player ID from URL parameter
     useEffect(() => {
@@ -66,7 +67,19 @@ function PlayContent() {
         });
 
         return () => unsubscribe();
+
     }, [gameId, playerId]);
+
+    // Reset extraction to 50% of max when turn changes
+    useEffect(() => {
+        if (gameState && gameState.turn !== lastTurnRef.current) {
+            lastTurnRef.current = gameState.turn;
+            if (gameState.maxExtraction) {
+                const initialValue = (gameState.maxExtraction / 2000000).toFixed(1); // 50% in millions
+                setExtraction(initialValue);
+            }
+        }
+    }, [gameState?.turn, gameState?.maxExtraction]);
 
     const joinGame = async () => {
         if (!gameId || !playerId) return;
@@ -105,7 +118,9 @@ function PlayContent() {
             currentTurnExtraction: finalAmount
         });
 
-        setExtraction('');
+        await update(playerRef, {
+            currentTurnExtraction: finalAmount
+        });
     };
 
     const leaveGame = async () => {
