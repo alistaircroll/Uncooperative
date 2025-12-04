@@ -154,7 +154,7 @@ export default function FishPondSimulation() {
                         style={{
                             padding: '12px 8px',
                             backgroundColor: scenario === key ? val.color : '#f8f9fa',
-                            color: scenario === key ? 'white' : '#333',
+                            color: scenario === key ? 'white' : '#111',
                             border: `2px solid ${val.color}`,
                             borderRadius: '8px',
                             cursor: 'pointer',
@@ -192,7 +192,7 @@ export default function FishPondSimulation() {
                     marginBottom: '24px'
                 }}>
                     <div>
-                        <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '6px' }}>
+                        <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', marginBottom: '6px', color: '#111' }}>
                             Panic Threshold: {panicThreshold} fish
                         </label>
                         <input
@@ -208,7 +208,7 @@ export default function FishPondSimulation() {
                         </div>
                     </div>
                     <div>
-                        <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '6px' }}>
+                        <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', marginBottom: '6px', color: '#111' }}>
                             Panic Multiplier: {panicMultiplier}x consumption
                         </label>
                         <input
@@ -323,10 +323,11 @@ export default function FishPondSimulation() {
                 padding: '16px',
                 backgroundColor: '#f8f9fa',
                 borderRadius: '8px',
-                marginBottom: '24px'
+                marginBottom: '24px',
+                color: '#111'
             }}>
-                <div style={{ fontWeight: 'bold', marginBottom: '12px' }}>Scenario Comparison (30 days)</div>
-                <table style={{ width: '100%', fontSize: '13px', borderCollapse: 'collapse' }}>
+                <div style={{ fontWeight: 'bold', marginBottom: '12px', color: '#111' }}>Scenario Comparison (30 days)</div>
+                <table style={{ width: '100%', fontSize: '13px', borderCollapse: 'collapse', color: '#111' }}>
                     <thead>
                         <tr style={{ borderBottom: '2px solid #ddd' }}>
                             <th style={{ textAlign: 'left', padding: '8px' }}>Scenario</th>

@@ -254,7 +254,7 @@ export default function OptimalExtraction() {
                 borderRadius: '8px'
             }}>
                 <div>
-                    <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '6px' }}>
+                    <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', marginBottom: '6px', color: '#111' }}>
                         Extraction Per Player: ${extractionPerPlayer.toFixed(1)}M
                     </label>
                     <input
@@ -272,7 +272,7 @@ export default function OptimalExtraction() {
                 </div>
 
                 <div>
-                    <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '6px' }}>
+                    <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', marginBottom: '6px', color: '#111' }}>
                         Number of Players: {players}
                     </label>
                     <input
@@ -286,7 +286,7 @@ export default function OptimalExtraction() {
                 </div>
 
                 <div>
-                    <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '6px' }}>
+                    <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', marginBottom: '6px', color: '#111' }}>
                         Starting Treasury: ${startingTreasury}M
                     </label>
                     <input
@@ -301,7 +301,7 @@ export default function OptimalExtraction() {
                 </div>
 
                 <div>
-                    <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '6px' }}>
+                    <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', marginBottom: '6px', color: '#111' }}>
                         Interest Rate: {interestRate}%
                     </label>
                     <input
@@ -315,7 +315,7 @@ export default function OptimalExtraction() {
                 </div>
 
                 <div>
-                    <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '6px' }}>
+                    <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', marginBottom: '6px', color: '#111' }}>
                         Max Extraction: ${maxExtraction}M
                     </label>
                     <input
@@ -333,7 +333,7 @@ export default function OptimalExtraction() {
                 </div>
 
                 <div>
-                    <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '6px' }}>
+                    <label style={{ display: 'block', fontSize: '13px', fontWeight: '700', marginBottom: '6px', color: '#111' }}>
                         Number of Turns: {turns}
                     </label>
                     <input
