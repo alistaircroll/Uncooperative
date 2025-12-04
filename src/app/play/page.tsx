@@ -237,9 +237,9 @@ function PlayContent() {
                                     ${currentAmount.toFixed(1)}M
                                 </div>
 
-                                <div className={styles.sliderControl}>
+                                <div className={styles.sliderWrapper}>
                                     <button
-                                        className={styles.adjustButton}
+                                        className={styles.adjustBtn}
                                         onClick={() => adjustExtraction(-0.1)}
                                     >
                                         -
@@ -258,7 +258,7 @@ function PlayContent() {
                                     </div>
 
                                     <button
-                                        className={styles.adjustButton}
+                                        className={styles.adjustBtn}
                                         onClick={() => adjustExtraction(0.1)}
                                     >
                                         +
