@@ -2,107 +2,20 @@
 
 A real-time multiplayer game built with Next.js and Firebase, exploring the tragedy of the commons.
 
-## Setup Instructions
+How to play
+In Uncooperative, players extract money from a treasury each turn. And each turn, the treasury earns interest. The winner is the person with the most money at the end of the game. But there's a catch: If the treasury ever runs out, the game is over, and everyone loses. Since each player doesn't know how much the other players took, they have to coordinate.
 
-### 1. Firebase Configuration
+If everyone cooperates, there's an optimal strategy to get as much wealth as possible. But to win, you need to do better than others. The question is: Can you do better than everyone else without breaking the bank?
 
-1. Go to [Firebase Console](https://console.firebase.google.com/)
-2. Create a new project (or use an existing one)
-3. Enable **Realtime Database**:
-   - In the Firebase console, go to "Build" → "Realtime Database"
-   - Click "Create Database"
-   - Choose a location
-   - Start in **test mode** (for development)
-4. Get your Firebase config:
-   - Go to Project Settings (gear icon)
-   - Scroll down to "Your apps"
-   - Click the web icon (`</>`) to add a web app
-   - Copy the `firebaseConfig` object
-5. Update `src/lib/firebase.js` with your config values
+To begin, simply have your players scan the QR code on their phones and enter their names, then click "Start Game". To clear the players who are signed in click "Clear Players".
 
-### 2. Install Dependencies
+To play the game:
+1. Visit https://uncooperative-game.vercel.app/
+2. Have 3 or more players scan the QR code with their phones, then enter their names on the web page that loads.
+3. Once all players have signed in, adjust the parameters in Game Settings. You can use the defaults or change the initial treasury, number of turns, maximum extraction per turn, and interest per turn. You can also choose to see how much each person extracted after the turn is finished.
+4. Click Start Game.
+5. Each turn, all players enter the amount they extract that turn by sliding the slider on their phone and tapping Extract. When all extractions are in, the main screen shows the total amount extracted, what interest was earned, and what's left in the treasury.
 
-```bash
-npm install
-```
+If you make it to the end of the game without draining the treasury, the winner is the person with the most money.
 
-### 3. Run Development Server
-
-```bash
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-### 4. Deploy to Vercel
-
-1. Push your code to GitHub
-2. Go to [Vercel](https://vercel.com)
-3. Import your repository
-4. Deploy!
-
-Alternatively, use the Vercel CLI:
-
-```bash
-npm install -g vercel
-vercel
-```
-
-## How to Play
-
-1. **Host**: Click "Create New Game" to start a new game session
-2. **Players**: Scan the QR code or visit the join URL on mobile devices
-3. **Gameplay**: 
-   - Each turn, players extract money from the treasury
-   - The treasury earns interest after each turn
-   - Win by having the most money at the end
-   - But if the treasury runs out, everyone loses!
-
-## Project Structure
-
-```
-src/
-├── app/
-│   ├── host/          # Main display (game host view)
-│   ├── play/          # Mobile display (player view)
-│   ├── globals.css    # Design system & styles
-│   └── page.tsx       # Landing page
-└── lib/
-    └── firebase.js    # Firebase configuration
-```
-
-## Tech Stack
-
-- **Next.js 15** - React framework
-- **Firebase Realtime Database** - Real-time state synchronization
-- **Vercel** - Deployment platform
-- **CSS Modules** - Styling
-
-## Firebase Database Structure
-
-```json
-{
-  "games": {
-    "gameId": {
-      "treasury": 100000000,
-      "turn": 1,
-      "maxTurns": 10,
-      "maxExtraction": 5000000,
-      "interestRate": 0.10,
-      "status": "playing",
-      "turnPhase": "extracting",
-      "players": {
-        "playerId": {
-          "name": "Player Name",
-          "wealth": 5000000,
-          "currentTurnExtraction": 2000000
-        }
-      }
-    }
-  }
-}
-```
-
-## License
-
-MIT
+To learn more about coordination problems, and see some simulations of the optimal way to play the game, visit https://uncooperative-game.vercel.app/about
