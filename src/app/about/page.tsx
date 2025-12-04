@@ -1,5 +1,7 @@
 import Link from 'next/link';
 import styles from './about.module.css';
+import FishPondSimulation from '@/components/FishPondSimulation';
+import OptimalExtraction from '@/components/OptimalExtraction';
 
 export default function AboutPage() {
     return (
@@ -48,15 +50,8 @@ export default function AboutPage() {
                         Here's a simple simulation that lets you see these four scenarios, and what happens when people notice the fish are disappearing and panic:
                     </p>
 
-                    <div className={styles.artifactLink}>
-                        <a
-                            href="https://claude.ai/public/artifacts/2c44025e-1546-4020-9acb-fa0dadd358bb"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className={styles.artifactButton}
-                        >
-                            🐟 Open Fish Pond Simulation
-                        </a>
+                    <div className={styles.artifactEmbed}>
+                        <FishPondSimulation />
                     </div>
 
                     <p>
@@ -91,15 +86,8 @@ export default function AboutPage() {
                         If everyone cooperates, there's an optimal strategy to get as much wealth as possible. Play with the sliders in the graph below to see how things play out, and click "Apply Optimal Rate" to see the maximum total wealth you can get.
                     </p>
 
-                    <div className={styles.artifactLink}>
-                        <a
-                            href="https://claude.ai/public/artifacts/c01cd897-074c-4dc9-beb3-7887f8ecf9b0"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className={styles.artifactButton}
-                        >
-                            📊 Open Optimal Strategy Calculator
-                        </a>
+                    <div className={styles.artifactEmbed}>
+                        <OptimalExtraction />
                     </div>
 
                     <p>
