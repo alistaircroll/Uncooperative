@@ -51,13 +51,13 @@ export default function AboutPage() {
                     <div className={styles.artifactEmbed}>
                         <iframe
                             src="https://claude.site/public/artifacts/2c44025e-1546-4020-9acb-fa0dadd358bb/embed"
-                            title="Fish Pond Simulation"
+                            title="Claude Artifact"
                             width="100%"
                             height="600"
                             frameBorder="0"
                             allow="clipboard-write"
                             allowFullScreen
-                        />
+                        ></iframe>
                     </div>
 
                     <p>
@@ -94,14 +94,14 @@ export default function AboutPage() {
 
                     <div className={styles.artifactEmbed}>
                         <iframe
-                            src="https://claude.site/public/artifacts/c01cd897-074c-4dc9-beb3-7887f8ecf9b0/embed"
-                            title="Optimal Strategy Calculator"
+                            src="https://claude.site/public/artifacts/c01cd897-74c-4dc9-beb3-7887f8ecf9b0/embed"
+                            title="Claude Artifact"
                             width="100%"
                             height="600"
                             frameBorder="0"
                             allow="clipboard-write"
                             allowFullScreen
-                        />
+                        ></iframe>
                     </div>
 
                     <p>
