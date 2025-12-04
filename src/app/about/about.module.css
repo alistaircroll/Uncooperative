@@ -36,7 +36,7 @@
 
 .card p {
     font-size: 1.1rem;
-    color: var(--foreground);
+    color: #2d2d2d;
     line-height: 1.8;
     margin-bottom: 1.5rem;
 }
@@ -60,6 +60,7 @@
     font-weight: 600;
     line-height: 1.6 !important;
     margin-bottom: 2rem !important;
+    color: #2d2d2d !important;
 }
 
 .sectionTitle {
@@ -72,6 +73,13 @@
     color: transparent;
 }
 
+.artifactEmbed {
+    margin: 2rem 0;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
 .placeholder {
     font-size: 1.2rem;
     color: var(--text-secondary);
@@ -81,12 +89,13 @@
 .actions {
     display: flex;
     justify-content: center;
+    margin-top: 1rem;
 }
 
 .button {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: var(--foreground);
+    background: linear-gradient(135deg, #c084fc 0%, #e879f9 100%);
+    border: none;
+    color: white;
     padding: 1rem 2rem;
     border-radius: 12px;
     font-size: 1.1rem;
@@ -94,9 +103,10 @@
     cursor: pointer;
     transition: all 0.2s ease;
     text-decoration: none;
+    box-shadow: 0 4px 15px rgba(192, 132, 252, 0.3);
 }
 
 .button:hover {
-    background: rgba(255, 255, 255, 0.2);
     transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(192, 132, 252, 0.4);
 }

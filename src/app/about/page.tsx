@@ -45,6 +45,22 @@ export default function AboutPage() {
                     </p>
 
                     <p>
+                        Here's a simple simulation that lets you see these four scenarios, and what happens when people notice the fish are disappearing and panic:
+                    </p>
+
+                    <div className={styles.artifactEmbed}>
+                        <iframe
+                            src="https://claude.site/public/artifacts/2c44025e-1546-4020-9acb-fa0dadd358bb/embed"
+                            title="Fish Pond Simulation"
+                            width="100%"
+                            height="600"
+                            frameBorder="0"
+                            allow="clipboard-write"
+                            allowFullScreen
+                        />
+                    </div>
+
+                    <p>
                         The fish pond became a competitive game. The only way to better than others is to break the rules.
                     </p>
 
@@ -53,7 +69,7 @@ export default function AboutPage() {
                     </p>
 
                     <p>
-                        (There's even a shorthand name for coordination problems: Moloch. If you want to learn more about this, check out <a href="https://youtu.be/KCSsKV5F4xc" target="_blank" rel="noopener noreferrer">Liv Boeree's amazing discussion with Daniel Schmachtenberger</a> on the subject.)
+                        (There's even a shorthand name for coordination problems: Moloch. If you want to learn more about this, check out <a href="https://youtu.be/KCSsKV5F4xc" target="_blank" rel="noopener noreferrer">Liv Boeree's amazing discussion with Daniel Schmachtenberger</a> on the subject. And check out <a href="https://online.hbs.edu/blog/post/tragedy-of-the-commons-impact-on-sustainability-issues" target="_blank" rel="noopener noreferrer">this HBS article with five Tragedy of the Commons examples</a>.)
                     </p>
 
                     <p>
@@ -70,6 +86,26 @@ export default function AboutPage() {
 
                     <p>
                         But there's a catch: If the treasury ever runs out, the game is over, and everyone loses. Since each player doesn't know how much the other players took, they have to coordinate.
+                    </p>
+
+                    <p>
+                        If everyone cooperates, there's an optimal strategy to get as much wealth as possible. Play with the sliders in the graph below to see how things play out, and click "Apply Optimal Rate" to see the maximum total wealth you can get.
+                    </p>
+
+                    <div className={styles.artifactEmbed}>
+                        <iframe
+                            src="https://claude.site/public/artifacts/c01cd897-074c-4dc9-beb3-7887f8ecf9b0/embed"
+                            title="Optimal Strategy Calculator"
+                            width="100%"
+                            height="600"
+                            frameBorder="0"
+                            allow="clipboard-write"
+                            allowFullScreen
+                        />
+                    </div>
+
+                    <p>
+                        The question is: Can you do better than everyone else without breaking the bank?
                     </p>
 
                     <p>
