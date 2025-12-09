@@ -176,8 +176,8 @@ export default function FishPondSimulation() {
                 borderRadius: '0 8px 8px 0',
                 marginBottom: '24px'
             }}>
-                <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>{currentScenario.title}</div>
-                <div style={{ fontSize: '14px', color: '#666' }}>{currentScenario.description}</div>
+                <div style={{ fontWeight: 'bold', marginBottom: '4px', color: '#111' }}>{currentScenario.title}</div>
+                <div style={{ fontSize: '14px', color: '#333' }}>{currentScenario.description}</div>
             </div>
 
             {/* Collapse Controls */}

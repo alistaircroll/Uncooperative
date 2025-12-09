@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useState, useMemo, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { ref, onValue, update, get } from 'firebase/database';
 import { database } from '@/lib/firebase';
@@ -174,6 +174,42 @@ function HostContent() {
         });
     };
 
+    const playerCount = Object.keys(gameState?.players || {}).length;
+
+    const optimalWealth = useMemo(() => {
+        if (!gameState || playerCount < 3) return null;
+
+        const startingTreasury = gameState.treasury / 1000000;
+        const interestRate = gameState.interestRate;
+        const maxExtraction = gameState.maxExtraction / 1000000;
+        const turns = gameState.maxTurns;
+
+        let bestTotalExtracted = 0;
+
+        // Search for optimal extraction per player
+        // Step by 0.1M for performance
+        for (let testExtraction = 0; testExtraction <= maxExtraction; testExtraction += 0.1) {
+            let treasury = startingTreasury;
+            let totalExtracted = 0;
+            const totalExtractionPerTurn = testExtraction * playerCount;
+
+            for (let turn = 1; turn <= turns; turn++) {
+                if (treasury <= 0) break;
+
+                const actualExtraction = Math.min(totalExtractionPerTurn, Math.max(0, treasury));
+                treasury -= actualExtraction;
+                totalExtracted += actualExtraction;
+                treasury += treasury * interestRate;
+            }
+
+            if (totalExtracted > bestTotalExtracted) {
+                bestTotalExtracted = totalExtracted;
+            }
+        }
+
+        return bestTotalExtracted;
+    }, [gameState?.treasury, gameState?.interestRate, gameState?.maxExtraction, gameState?.maxTurns, playerCount]);
+
     if (loading) {
         return <div className="container flex-center" style={{ minHeight: '100vh' }}>
             <div className="pulse">Loading game...</div>
@@ -191,7 +227,6 @@ function HostContent() {
 
     const players = gameState.players || {};
     const playerList = Object.entries(players).map(([id, data]) => ({ id, ...data }));
-    const playerCount = playerList.length;
     const namedPlayerCount = playerList.filter(p => p.name).length;
     const canStart = namedPlayerCount >= 3;
 
@@ -330,6 +365,19 @@ function HostContent() {
                                             >+</button>
                                         </div>
                                     </div>
+
+                                    <div style={{ margin: '1rem 0', padding: '0.75rem', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
+                                        {optimalWealth !== null ? (
+                                            <>
+                                                With these settings the maximum that can be extracted is <strong style={{ color: 'var(--accent)' }}>${optimalWealth.toFixed(1)}M</strong> or <strong style={{ color: 'var(--accent)' }}>${(optimalWealth / playerCount).toFixed(1)}M</strong> per player.
+                                            </>
+                                        ) : (
+                                            <>
+                                                Once 3 or more players have joined, the maximum extraction amount will appear here.
+                                            </>
+                                        )}
+                                    </div>
+
                                     <div>
                                         <label>Show Player Wealth</label>
                                         <label className={styles.toggle}>
